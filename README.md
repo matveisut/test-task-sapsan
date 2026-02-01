@@ -2,6 +2,11 @@
 
 REST API для ответов на вопросы по загруженному документу (.docx). Реализовано на FastAPI, LangChain и облачной LLM (OpenRouter).
 
+### Модели
+
+- **LLM:** Arcee AI Trinity Large Preview (через OpenRouter, бесплатно). Ключ — `OPENROUTER_API_KEY` в `.env`.
+- **Эмбеддер:** `sentence-transformers/distiluse-base-multilingual-cased-v2` (Hugging Face). Используется для векторного поиска по чанкам документа (русский/английский).
+
 ## Требования ТЗ
 
 - Система для ответов на вопросы по документу в Docker-контейнере
