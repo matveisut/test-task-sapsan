@@ -5,11 +5,13 @@ import uuid
 import os
 from typing import Dict, Any
 
-from app.services import rag_service
+import rag_service
 
 app = FastAPI(title="DocQA API", version="0.1.0")
 
+# Хранилище в памяти: file_id -> путь к сохранённому .docx
 uploaded_files: Dict[str, str] = {}
+# Статусы вопросов: question_id -> {"status": "pending"|"done"|"error", "answer": ... или "error": ...}
 questions_status: Dict[str, Dict[str, Any]] = {}
 
 
@@ -30,6 +32,7 @@ async def health():
 
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
+    """Загрузка .docx во временную папку, возвращает file_id."""
     if not file.filename.lower().endswith(".docx"):
         raise HTTPException(status_code=400, detail="Only .docx files are supported")
 
@@ -44,6 +47,7 @@ async def upload_file(file: UploadFile = File(...)):
 
 
 def _process_question_task(question_id: str, file_id: str, question: str):
+    """Фоновая задача: строит векторное хранилище по файлу, получает ответ через RAG, пишет в questions_status."""
     try:
         if file_id not in uploaded_files:
             questions_status[question_id] = {"status": "error", "error": "file_id not found"}
@@ -61,6 +65,7 @@ def _process_question_task(question_id: str, file_id: str, question: str):
 
 @app.post("/ask")
 async def ask_question(payload: AskRequest, background_tasks: BackgroundTasks):
+    """Принимает file_id и question, запускает обработку в фоне, сразу возвращает question_id."""
     if payload.file_id not in uploaded_files:
         raise HTTPException(status_code=404, detail="file_id not found")
 
@@ -72,6 +77,7 @@ async def ask_question(payload: AskRequest, background_tasks: BackgroundTasks):
 
 @app.get("/result/{question_id}")
 async def get_result(question_id: str):
+    """Возвращает статус обработки и ответ (если готов) или ошибку."""
     if question_id not in questions_status:
         raise HTTPException(status_code=404, detail="question_id not found")
     return questions_status[question_id]

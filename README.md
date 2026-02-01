@@ -2,7 +2,7 @@
 
 REST API для ответов на вопросы по загруженному документу (.docx). Реализовано на FastAPI, LangChain и облачной LLM (OpenRouter).
 
-## Требования ТЗ — соблюдены
+## Требования ТЗ
 
 - Система для ответов на вопросы по документу в Docker-контейнере
 - REST на FastAPI: загрузка .docx как контекст, вопросы по документу, ответы в JSON
@@ -81,36 +81,3 @@ curl http://localhost:8000/result/ВАШ_QUESTION_ID
 ```
 
 Опрос можно повторять, пока `status` не станет `"done"` или `"error"`.
-
-## Сценарий для видео (тестовое задание)
-
-1. **Получить документ в формате .docx**  
-   По ссылке из ТЗ (Google Docs) откройте документ → Файл → Скачать → Microsoft Word (.docx). Сохраните файл на компьютер.
-
-2. **Запустить API:**  
-   `docker compose up --build`
-
-3. **Загрузить документ** (в ответе будет `file_id`):
-   ```bash
-   curl -F "file=@путь/к/документу.docx" http://localhost:8000/upload
-   ```
-
-4. **Задать четыре вопроса** (подставьте полученный `file_id`; после каждого запроса сохраняйте `question_id` из ответа):
-
-   - Укажи предмет договора  
-     `curl -X POST -H "Content-Type: application/json" -d "{\"file_id\":\"FILE_ID\",\"question\":\"Укажи предмет договора\"}" http://localhost:8000/ask`
-
-   - Какой номер и дата у этого договора?  
-     `curl -X POST -H "Content-Type: application/json" -d "{\"file_id\":\"FILE_ID\",\"question\":\"Какой номер и дата у этого договора?\"}" http://localhost:8000/ask`
-
-   - Какие штрафные санкции предусматривает этот договор в отношении поставщика?  
-     `curl -X POST -H "Content-Type: application/json" -d "{\"file_id\":\"FILE_ID\",\"question\":\"Какие штрафные санкции предусматривает этот договор в отношении поставщика?\"}" http://localhost:8000/ask`
-
-   - Какие штрафные санкции предусматривает этот договор в отношении покупателя?  
-     `curl -X POST -H "Content-Type: application/json" -d "{\"file_id\":\"FILE_ID\",\"question\":\"Какие штрафные санкции предусматривает этот договор в отношении покупателя?\"}" http://localhost:8000/ask`
-
-5. **Получить ответы** — для каждого `question_id` вызвать:
-   ```bash
-   curl http://localhost:8000/result/QUESTION_ID
-   ```
-   Повторять запрос, пока в ответе не будет `"status": "done"` и поле `"answer"` с текстом.
